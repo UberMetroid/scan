@@ -209,32 +209,35 @@ pub fn scan_game(props: &Props) -> Html {
 
     html! {
         <div class="game-container">
-            <div class="hud-bar glassmorphic">
-                <div class="hud-metric">
-                    <span class="hud-label">{ format!("{}:", locale.t("sector").to_uppercase()) }</span>
-                    <span class="hud-value font-neon">{ sector.name().to_uppercase() }</span>
+            <div class="top-bar glassmorphic">
+                <div class="top-bar-controls">
+                    <div class="sector-buttons">
+                        <button onclick={sector_alpha} class={if *sector == Sector::Alpha { "active" } else { "" }}>{"ALPHA"}</button>
+                        <button onclick={sector_beta} class={if *sector == Sector::Beta { "active" } else { "" }}>{"BETA"}</button>
+                        <button onclick={sector_gamma} class={if *sector == Sector::Gamma { "active" } else { "" }}>{"GAMMA"}</button>
+                    </div>
+                    <div class="mode-toggles">
+                        <button onclick={toggle_flag_mode} class={if *flag_mode { "active" } else { "" }}>
+                            { if *flag_mode { "⚑ BEACON" } else { "⛏ REVEAL" } }
+                        </button>
+                        <button onclick={restart_click} class="btn-reset">{ locale.t("play_again") }</button>
+                    </div>
                 </div>
-                <div class="hud-metric">
-                    <span class="hud-label">{ "BEACONS:" }</span>
-                    <span class="hud-value font-neon">{ remaining_beacons }</span>
-                </div>
-                <div class="hud-metric">
-                    <span class="hud-label">{ format!("{}:", locale.t("score").to_uppercase()) }</span>
-                    <span class="hud-value font-neon">{ format!("{:.1}s", *elapsed as f64 / 10.0) }</span>
-                </div>
-            </div>
 
-            <div class="control-row">
-                <div class="sector-buttons">
-                    <button onclick={sector_alpha} class={if *sector == Sector::Alpha { "active" } else { "" }}>{"ALPHA"}</button>
-                    <button onclick={sector_beta} class={if *sector == Sector::Beta { "active" } else { "" }}>{"BETA"}</button>
-                    <button onclick={sector_gamma} class={if *sector == Sector::Gamma { "active" } else { "" }}>{"GAMMA"}</button>
+                <div class="top-bar-stats">
+                    <div class="hud-metric">
+                        <span class="hud-label">{"BEACONS:"}</span>
+                        <span class="hud-value font-neon">{ remaining_beacons }</span>
+                    </div>
+                    <div class="hud-metric">
+                        <span class="hud-label">{"TIMER:"}</span>
+                        <span class="hud-value font-neon">{ format!("{:.1}s", *elapsed as f64 / 10.0) }</span>
+                    </div>
                 </div>
-                <div class="mode-toggles">
-                    <button onclick={toggle_flag_mode} class={if *flag_mode { "active" } else { "" }}>
-                        { if *flag_mode { "⚑ BEACON" } else { "⛏ REVEAL" } }
-                    </button>
-                    <button onclick={restart_click} class="btn-reset">{ locale.t("play_again") }</button>
+
+                <div class="top-bar-leaderboard">
+                    <span class="leaderboard-title">{ format!("{}:", locale.t("leaderboard").to_uppercase()) }</span>
+                    <ScanLeaderboard sector={*sector} reload_trigger={*reload_trigger} />
                 </div>
             </div>
 
@@ -259,8 +262,6 @@ pub fn scan_game(props: &Props) -> Html {
                     html! {}
                 } }
             </div>
-
-            <ScanLeaderboard sector={*sector} reload_trigger={*reload_trigger} />
         </div>
     }
 }

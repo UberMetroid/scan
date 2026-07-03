@@ -2,7 +2,6 @@
 
 use crate::api::ApiService;
 use crate::components::scan_logic::Sector;
-use crate::i18n::LocaleContext;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq, Clone)]
@@ -16,7 +15,6 @@ pub fn scan_leaderboard(props: &Props) -> Html {
     let sector = props.sector;
     let reload_trigger = props.reload_trigger;
     let entries = use_state(Vec::new);
-    let locale = use_context::<LocaleContext>().expect("locale context");
 
     {
         let entries = entries.clone();
@@ -33,26 +31,23 @@ pub fn scan_leaderboard(props: &Props) -> Html {
     }
 
     html! {
-        <div class="leaderboard-panel glassmorphic">
-            <h3>{ format!("{} {}", sector.name(), locale.t("leaderboard")) }</h3>
-            <div class="leaderboard-list">
-                { if entries.is_empty() {
-                    html! { <div class="leaderboard-empty">{ locale.t("no_scores") }</div> }
-                } else {
-                    html! {
-                        <ul class="leaderboard-ol">
-                            { for entries.iter().take(5).enumerate().map(|(idx, entry)| {
-                                html! {
-                                    <li key={idx} class="leaderboard-item">
-                                        <span class="leader-name">{ format!("{}. {}", idx + 1, entry.name) }</span>
-                                        <span class="leader-score">{ format!("{:.1}s", entry.score as f64 / 10.0) }</span>
-                                    </li>
-                                }
-                            }) }
-                        </ul>
-                    }
-                } }
-            </div>
+        <div class="inline-leaderboard">
+            { if entries.is_empty() {
+                html! { <span class="leaderboard-empty-inline">{"-"}</span> }
+            } else {
+                html! {
+                    { for entries.iter().take(3).enumerate().map(|(idx, entry)| {
+                        html! {
+                            <span key={idx} class="leaderboard-inline-item">
+                                <span class="leader-name">{ format!("{}. {}", idx + 1, entry.name) }</span>
+                                { " (" }
+                                <span class="leader-score">{ format!("{:.1}s", entry.score as f64 / 10.0) }</span>
+                                { ")" }
+                            </span>
+                        }
+                    }) }
+                }
+            } }
         </div>
     }
 }
