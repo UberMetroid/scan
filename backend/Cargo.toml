@@ -1,0 +1,64 @@
+[package]
+name = "backend"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+description = "Axum backend service for Scan."
+readme = "../README.md"
+
+[[bin]]
+name = "backend"
+path = "src/main.rs"
+
+[[bin]]
+name = "sh"
+path = "src/bin/sh.rs"
+
+[dependencies]
+shared-core = { git = "https://github.com/UberMetroid/shared-assets", tag = "v3.0.18" }
+shared-backend = { git = "https://github.com/UberMetroid/shared-assets", tag = "v3.0.18" }
+axum = { version = "0.8", features = ["ws", "macros"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# `chrono` is maintained and audited; the `time` crate is no longer.
+# `default-features = false` keeps the dependency tree small and pulls in only
+# the formatting / parsing pieces Snake uses for Rfc3339 timestamps.
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+# `time` is retained only for `time::Duration` in cookie-lifetime calculations.
+# Date formatting and TZ math moved to `chrono`. The RUSTSEC-2024-0370 advisory
+# applies to `time`'s full feature set; we only use `Duration::new(_, _)` with
+# no formatting / parsing macros, which is the lowest-risk subset. No features
+# beyond `std` are required.
+time = { version = "0.3", default-features = false, features = ["std"] }
+# `cors` feature intentionally not enabled: shared-backend builds the CORS
+# layer internally and we wire it via `cors_layer(&config)`. Enabling it here
+# would be dead surface area.
+tower-http = { version = "0.6", features = ["fs", "trace", "limit"] }
+dotenvy = "0.15"
+cookie = "0.18"
+axum-extra = { version = "0.12", features = ["cookie"] }
+regex = "1.10"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+percent-encoding = "2.3"
+sha2 = "0.11"
+# OS RNG for session-id generation. We rely on `OsRng` exclusively (never
+# `thread_rng`'s user-space generator) so an attacker cannot predict session
+# tokens even if they observe the process memory.
+rand = "0.8"
+# Derive macro for the crate-wide `AppError` enum and its `IntoResponse`
+# mapping; avoids hand-rolling a Display + Error impl.
+thiserror = "2"
+# Direct dependency on `constant_time_eq` for PIN comparison. The same crate
+# is pulled in transitively by `shared-backend`, but declaring it here means a
+# future refactor of shared-backend won't silently break our use of it.
+constant_time_eq = "0.3"
+
+[dev-dependencies]
+tempfile = "3"
+# Needed for `tower::ServiceExt::oneshot` in `tests/integration.rs`.
+tower = { version = "0.5", features = ["util"] }
