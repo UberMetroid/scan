@@ -114,20 +114,31 @@ pub fn scan_game(props: &Props) -> Html {
     let on_flag = {
         let board = board.clone();
         let on_status = props.on_status.clone();
+        let locale = locale.clone();
         Callback::from(move |(r, c): (usize, usize)| {
             let mut new_board = (*board).clone();
             let was_flagged = new_board.grid[r][c].is_flagged;
+
+            // Limit flags to maximum mines to prevent going negative
+            if !was_flagged && new_board.count_flagged() >= new_board.mines {
+                on_status.emit(Some((
+                    locale.t("no_flags_remaining"),
+                    "error".to_string(),
+                )));
+                return;
+            }
+
             new_board.toggle_flag(r, c);
             let is_flagged = new_board.grid[r][c].is_flagged;
             if was_flagged != is_flagged {
                 if is_flagged {
                     on_status.emit(Some((
-                        format!("Beacon deployed at ({}, {}).", c + 1, r + 1),
+                        format!("Flag deployed at ({}, {}).", c + 1, r + 1),
                         "success".to_string(),
                     )));
                 } else {
                     on_status.emit(Some((
-                        format!("Beacon retrieved from ({}, {}).", c + 1, r + 1),
+                        format!("Flag retrieved from ({}, {}).", c + 1, r + 1),
                         "success".to_string(),
                     )));
                 }
@@ -146,7 +157,7 @@ pub fn scan_game(props: &Props) -> Html {
         Callback::from(move |_| flag_mode.set(!*flag_mode))
     };
 
-    let remaining_beacons = board.mines as isize - board.count_flagged() as isize;
+    let remaining_flags = board.mines as isize - board.count_flagged() as isize;
 
     html! {
         <div class="game-container">
@@ -173,7 +184,7 @@ pub fn scan_game(props: &Props) -> Html {
             <div class="control-row-minimal">
                 <div class="mode-toggles">
                     <button onclick={toggle_flag_mode} class={if *flag_mode { "active" } else { "" }}>
-                        { if *flag_mode { "⚑ BEACON" } else { "⛏ REVEAL" } }
+                        { if *flag_mode { "⚑ FLAG" } else { "⛏ REVEAL" } }
                     </button>
                     { if board.status == GameStatus::Playing {
                         html! {
@@ -188,9 +199,9 @@ pub fn scan_game(props: &Props) -> Html {
                     } }
                 </div>
                 <div class="stats-counter">
-                    <div class="beacons-counter">
-                        <span class="hud-label">{ format!("{}:", locale.t("beacons").to_uppercase()) }</span>
-                        <span class="hud-value font-neon">{ remaining_beacons }</span>
+                    <div class="flags-counter">
+                        <span class="hud-label">{ format!("{}:", locale.t("flags").to_uppercase()) }</span>
+                        <span class="hud-value font-neon">{ remaining_flags }</span>
                     </div>
                     <div class="timer-counter">
                         <span class="hud-label">{ format!("{}:", locale.t("time").to_uppercase()) }</span>
