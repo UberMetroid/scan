@@ -1,9 +1,10 @@
-//! Main Scan gameplay container component (Alpha-only minimal visor).
+//! Main Scan gameplay container component (Alpha-only minimal visor with timer).
 
 use crate::components::scan_board::ScanBoard;
 use crate::components::scan_logic::{BoardState, GameStatus, Sector};
 use crate::components::scan_overlay::ScanOverlay;
 use crate::i18n::LocaleContext;
+use gloo_timers::callback::Interval;
 use yew::prelude::*;
 
 #[derive(Properties, PartialEq, Clone)]
@@ -15,12 +16,51 @@ pub struct Props {
 pub fn scan_game(props: &Props) -> Html {
     let board = use_state(|| BoardState::new(Sector::Alpha));
     let flag_mode = use_state(|| false);
+    let elapsed = use_state(|| 0u32);
+    let interval_handle = use_mut_ref(|| None::<Interval>);
     let locale = use_context::<LocaleContext>().expect("locale context");
+
+    // Stop timer on component drop
+    {
+        let interval_handle = interval_handle.clone();
+        use_effect_with((), move |_| {
+            move || {
+                *interval_handle.borrow_mut() = None;
+            }
+        });
+    }
+
+    let start_timer = {
+        let elapsed = elapsed.clone();
+        let interval_handle = interval_handle.clone();
+        let board = board.clone();
+        move || {
+            let elapsed = elapsed.clone();
+            let board = board.clone();
+            let interval = Interval::new(100, move || {
+                if board.status == GameStatus::Playing {
+                    elapsed.set(*elapsed + 1);
+                }
+            });
+            *interval_handle.borrow_mut() = Some(interval);
+        }
+    };
+
+    let stop_timer = {
+        let interval_handle = interval_handle.clone();
+        move || {
+            *interval_handle.borrow_mut() = None;
+        }
+    };
 
     let reset_game = {
         let board = board.clone();
+        let elapsed = elapsed.clone();
+        let stop_timer = stop_timer.clone();
         let on_status = props.on_status.clone();
         Callback::from(move |_| {
+            stop_timer();
+            elapsed.set(0);
             board.set(BoardState::new(Sector::Alpha));
             on_status.emit(Some((
                 "Re-initialized. Ready to scan.".to_string(),
@@ -31,6 +71,8 @@ pub fn scan_game(props: &Props) -> Html {
 
     let on_reveal = {
         let board = board.clone();
+        let start_timer = start_timer.clone();
+        let stop_timer = stop_timer.clone();
         let on_status = props.on_status.clone();
         Callback::from(move |(r, c): (usize, usize)| {
             let mut new_board = (*board).clone();
@@ -39,6 +81,7 @@ pub fn scan_game(props: &Props) -> Html {
             new_board.reveal_cell(r, c);
 
             if old_status == GameStatus::NotStarted && new_board.status == GameStatus::Playing {
+                start_timer();
                 on_status.emit(Some((
                     "Scanning sector... Detonation hazards present.".to_string(),
                     "success".to_string(),
@@ -51,6 +94,7 @@ pub fn scan_game(props: &Props) -> Html {
             }
 
             if new_board.status == GameStatus::Won || new_board.status == GameStatus::Lost {
+                stop_timer();
                 if new_board.status == GameStatus::Won {
                     on_status.emit(Some((
                         "Sector secured successfully.".to_string(),
@@ -133,9 +177,15 @@ pub fn scan_game(props: &Props) -> Html {
                     </button>
                     <button onclick={restart_click} class="btn-reset">{ locale.t("play_again") }</button>
                 </div>
-                <div class="beacons-counter">
-                    <span class="hud-label">{"BEACONS:"}</span>
-                    <span class="hud-value font-neon">{ remaining_beacons }</span>
+                <div class="stats-counter">
+                    <div class="beacons-counter">
+                        <span class="hud-label">{"BEACONS:"}</span>
+                        <span class="hud-value font-neon">{ remaining_beacons }</span>
+                    </div>
+                    <div class="timer-counter">
+                        <span class="hud-label">{"TIME:"}</span>
+                        <span class="hud-value font-neon">{ format!("{:.1}s", *elapsed as f64 / 10.0) }</span>
+                    </div>
                 </div>
             </div>
         </div>

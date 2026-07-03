@@ -87,7 +87,13 @@ main {
     gap: 0.5rem;
 }
 
-.beacons-counter {
+.stats-counter {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.beacons-counter, .timer-counter {
     display: flex;
     align-items: center;
     gap: 0.5rem;
