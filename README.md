@@ -1,15 +1,17 @@
-# Scan - Orbital Sector Scanner
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/unraid-templates/main/icons/scan.png" alt="Scan Logo" width="128" height="128">
-</p>
+# Scan — Orbital Sector Scanner <img src="https://raw.githubusercontent.com/UberMetroid/unraid-templates/main/icons/scan.png" width="48" height="48" alt="scan logo" align="right">
 
 Scan is a clean, secure, and optimized planetary hazard sector scanner (Minesweeper clone) built in Rust and WebAssembly, served by a high-performance Axum backend.
 
 ---
 
-## Key Features
+## 🏛️ Architecture & Stack
+*   **Frontend**: Yew (WASM)
+*   **Backend**: Axum (Rust) / Tokio
+*   **Deployment**: Nix-built Container / Unraid native / Docker Compose
 
+---
+
+## 🟢 Key Features
 *   **Standardized UI Alignment**: Completely integrated with `shared-assets` for a uniform theme engine, navigation header, footer, and authentication layout.
 *   **Orbital Sector Environments**: Selectable atmospheric navigation sectors (Alpha, Beta, Gamma, Delta, Epsilon, Zeta) with custom sci-fi HUD color schemes.
 *   **Classic Scanning Rules**: Geothermal hazard (mine) sweep validation, adjacent count warnings, beacon placement (flags), and custom difficulty presets.
@@ -18,34 +20,79 @@ Scan is a clean, secure, and optimized planetary hazard sector scanner (Mineswee
 
 ---
 
-## Container Registry
+## 💾 Deployment & Installation
 
-The Docker image is built with **Nix** (no Alpine, fully reproducible) and published to Docker Hub:
+### Docker Compose
+Create a `docker-compose.yml` file with the following service definition:
 
-*   **Docker Hub**: [ubermetroid/scan](https://hub.docker.com/r/ubermetroid/scan)
+```yaml
+services:
+  scan:
+    image: ubermetroid/scan:latest
+    container_name: scan
+    restart: unless-stopped
+    volumes:
+      - ${SCAN_DATA_PATH:-./data}:/app/data
+    ports:
+      - ${PORT:-4503}:4503
+    environment:
+      PORT: 4503
+      BASE_URL: ${SCAN_BASE_URL:-http://localhost:4503}
+      SCAN_PIN: ${SCAN_PIN:-}
+      ALLOWED_ORIGINS: ${SCAN_ALLOWED_ORIGINS:-*}
+      MAX_ATTEMPTS: ${MAX_ATTEMPTS:-5}
+      SITE_TITLE: ${SCAN_SITE_TITLE:-Scan}
+      ENABLE_TRANSLATION: ${ENABLE_TRANSLATION:-true}
+      ENABLE_THEMES: ${ENABLE_THEMES:-true}
+      ENABLE_PRINT: ${ENABLE_PRINT:-true}
+      TZ: ${TZ:-UTC}
+```
 
 ---
 
-## Configuration Options
+## ⚙️ Configuration Options
 
-Configure these settings inside your Docker Compose environment or container environment variables:
-
-| Variable | Description | Default |
+| Environment Variable | Description | Default |
 | :--- | :--- | :--- |
 | `PORT` | The port number the backend HTTP server will bind to inside the container. | `4503` |
 | `SITE_TITLE` | Custom website title rendered in navigation headers, browser tabs, and PWA manifest. | `Scan` |
-| `BASE_URL` | Application base URL. Essential when deploying behind reverse proxies to ensure redirect and websocket links are resolved correctly. | `http://localhost:4503` |
-| `ALLOWED_ORIGINS` | Comma-separated list of allowed HTTP request origins (CORS filter). Use `*` to allow all origins. | `*` |
-| `SCAN_PIN` | Optional 4–10 digit PIN (numerical only) to lock access to the interface. Leave empty for public mode. | None |
+| `BASE_URL` | Application base URL. Essential when deploying behind reverse proxies. | `http://localhost:4503` |
+| `ALLOWED_ORIGINS` | Comma-separated list of allowed HTTP request origins (CORS filter). | `*` |
+| `SCAN_PIN` | Optional 4–10 digit PIN (numerical only) to lock access to the interface. | None |
 | `TZ` | Timezone for the container processes and logs. | `UTC` |
-| `ENABLE_TRANSLATION` | Enable the multi-language / translation selector in the navigation header (true/false). | `true` |
-| `ENABLE_THEMES` | Enable the theme selector in the navigation header (true/false). | `true` |
-| `ENABLE_PRINT` | Enable the print button in the navigation header (true/false). | `true` |
-| `MAX_ATTEMPTS` | Number of failed PIN attempts permitted before locking out the user client IP address. | `5` |
+| `ENABLE_TRANSLATION` | Enable the multi-language / translation selector in the navigation header. | `true` |
+| `ENABLE_THEMES` | Enable the theme selector in the navigation header. | `true` |
+| `ENABLE_PRINT` | Enable the print button in the navigation header. | `true` |
+| `MAX_ATTEMPTS` | Number of failed PIN attempts permitted before rate lockout. | `5` |
 | `LOCKOUT_TIME_MINUTES` | Lockout duration in minutes for IPs exceeding `MAX_ATTEMPTS`. | `15` |
 | `COOKIE_MAX_AGE_HOURS` | Duration in hours that the user's PIN session cookie remains valid. | `24` |
 | `SHUTDOWN_DRAIN_SECONDS` | Seconds to wait for active connections to finish before shutting down. | `5` |
-| `SHOW_VERSION` | Display the application version number in the footer (true/false). | `true` |
-| `SHOW_GITHUB` | Display the GitHub repository link in the footer (true/false). | `true` |
+| `SHOW_VERSION` | Display the application version number in the footer. | `true` |
+| `SHOW_GITHUB` | Display the GitHub repository link in the footer. | `true` |
 | `TRUST_PROXY` | Set `true` if backend is hosted behind a reverse proxy. | `false` |
 | `TRUSTED_PROXY_IPS` | Comma-separated IP/CIDR list of trusted upstream proxies. | None |
+
+---
+
+## 🛠️ Local Development
+
+Ensure you have the Rust toolchain and Trunk installed.
+
+```bash
+# 1. Run workspace tests
+cargo test
+
+# 2. Run clippy workspace checks
+cargo clippy --workspace --all-targets
+
+# 3. Start frontend Yew dev server (from frontend/)
+cd frontend && trunk serve
+
+# 4. Start backend Axum server (from backend/)
+cd backend && cargo run
+```
+
+---
+
+## 📄 License
+Licensed under the [Apache License, Version 2.0](LICENSE). Copyright 2026 UberMetroid.
