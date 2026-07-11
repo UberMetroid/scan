@@ -121,10 +121,7 @@ pub fn scan_game(props: &Props) -> Html {
 
             // Limit flags to maximum mines to prevent going negative
             if !was_flagged && new_board.count_flagged() >= new_board.mines {
-                on_status.emit(Some((
-                    locale.t("no_flags_remaining"),
-                    "error".to_string(),
-                )));
+                on_status.emit(Some((locale.t("no_flags_remaining"), "error".to_string())));
                 return;
             }
 
