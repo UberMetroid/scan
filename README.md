@@ -1,5 +1,7 @@
 # Scan
 
+[![CI](https://github.com/etecoon/scan/actions/workflows/ci.yml/badge.svg)](https://github.com/etecoon/scan/actions/workflows/ci.yml)
+
 Planetary hazard sector scanner (Minesweeper clone).
 
 ## Quick Start

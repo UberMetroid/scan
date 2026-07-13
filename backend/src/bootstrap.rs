@@ -55,6 +55,8 @@ pub fn resolve_port() -> u16 {
 pub fn load_dotenv() {
     #[cfg(not(test))]
     {
+        let data_dir = resolve_data_dir();
+        let _ = dotenvy::from_path(data_dir.join(".env"));
         let _ = dotenvy::from_path("/app/data/.env");
         let _ = dotenvy::dotenv();
     }
