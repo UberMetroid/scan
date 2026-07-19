@@ -1,6 +1,6 @@
 # Scan docker-compose.
 #
-# This file ships a complete, runnable recipe for the `studio2201/scan`
+# This file ships a complete, runnable recipe for the `ghcr.io/studio2201/scan`
 # image (UBI container from GHCR).
 # Configure the deployment by exporting variables in the
 # host shell env or a `.env` file in the same directory.
@@ -33,8 +33,6 @@
 #   * `ENABLE_TRANSLATION` — show the language picker in the header.
 #   * `ENABLE_THEMES`      — show the theme picker.
 #   * `ENABLE_PRINT`       — show the print button (browser print dialog).
-# services:
-#
 services:
   scan:
     # (1) MANDATORY: image to run. Pulled from GHCR. To use a
