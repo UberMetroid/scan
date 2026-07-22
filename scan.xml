@@ -10,7 +10,7 @@
   <Support>https://github.com/studio2201/scan/issues</Support>
   <Project>https://github.com/studio2201/scan</Project>
   <Overview>Secure self-hosted web network scanner and port diagnostics utility built in Rust.</Overview>
-  <Category>Game:Other Network:Web</Category>
+  <Category>Game:Arcade Game:Puzzle Network:Web</Category>
   <WebUI>http://[IP]:[PORT:4503]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/studio2201/unraid-templates/main/templates/scan.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/studio2201/unraid-templates/main/icons/scan.png</Icon>
