@@ -18,7 +18,7 @@ pub fn scan_game(props: &Props) -> Html {
     let flag_mode = use_state(|| false);
     let elapsed = use_state(|| 0u32);
     let interval_handle = use_mut_ref(|| None::<Interval>);
-    let locale = use_context::<LocaleContext>().expect("locale context");
+    let locale = use_context::<LocaleContext>().unwrap_or_default();
 
     // Stop timer on component drop
     {

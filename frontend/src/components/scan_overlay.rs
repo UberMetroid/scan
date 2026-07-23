@@ -12,7 +12,7 @@ pub struct Props {
 
 #[function_component(ScanOverlay)]
 pub fn scan_overlay(props: &Props) -> Html {
-    let locale = use_context::<LocaleContext>().expect("locale context");
+    let locale = use_context::<LocaleContext>().unwrap_or_default();
 
     let restart_click = {
         let on_restart = props.on_restart.clone();
